@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"time"
 )
 
@@ -37,7 +38,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	})
 
-	app.Use(logger.New())
+	app.Use(logger.New(), recover.New())
 
 	apiApp.registerRoutes(app)
 

@@ -10,8 +10,8 @@ func (api *APIApp) logError(method, uri string, err error) {
 	log.Errorw("", "method", method, "uri", uri, "error", err)
 }
 
-func errorResponse(c *fiber.Ctx, status int, m *fiber.Map) error {
-	return c.Status(status).JSON(m)
+func errorResponse(status int, message string) error {
+	return fiber.NewError(status, message)
 }
 
 func errorMessage(message string) *fiber.Map {
@@ -22,13 +22,17 @@ func errorMessage(message string) *fiber.Map {
 
 func (api *APIApp) serverErrorResponse(c *fiber.Ctx, err error) error {
 	api.logError(c.Method(), c.Request().URI().String(), err)
-	return errorResponse(c, http.StatusInternalServerError, errorMessage(
+	return errorResponse(http.StatusInternalServerError,
 		"the server encountered a problem and could not process your request",
-	))
+	)
 }
 
-func (api *APIApp) notFoundErrorResponse(c *fiber.Ctx) error {
-	return errorResponse(c, http.StatusNotFound, errorMessage(
+func (api *APIApp) notFoundErrorResponse() error {
+	return errorResponse(http.StatusNotFound,
 		"requested resource could not be found",
-	))
+	)
+}
+
+func (api *APIApp) badRequestErrorResponse(c *fiber.Ctx, err error) error {
+	return errorResponse(http.StatusBadRequest, err.Error())
 }

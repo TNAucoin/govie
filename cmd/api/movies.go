@@ -1,24 +1,42 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnaucoin/govie/cmd/presenter"
 	"github.com/tnaucoin/govie/internal/data"
 	"strconv"
+	"strings"
 	"time"
 )
 
 func CreateMovieHandler(api *APIApp) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		var input struct {
-			Title   string   `json:"title"`
-			Year    int32    `json:"year"`
-			Runtime int32    `json:"runtime"`
-			Genres  []string `json:"genres"`
+			Title   string   `json:"title" validate:"required"`
+			Year    int32    `json:"year" validate:"required,gte=1888,lte=9999"`
+			Runtime int32    `json:"runtime" validate:"required,gte=1"`
+			Genres  []string `json:"genres" validate:"required,min=1"`
 		}
 		err := c.BodyParser(&input)
 		if err != nil {
-			return api.badRequestErrorResponse(c, err)
+			return api.badRequestErrorResponse(err)
+		}
+		if errs := api.validator.Validate(input); len(errs) > 0 && errs[0].Error {
+			errMsgs := make([]string, 0)
+
+			for _, err := range errs {
+				errMsgs = append(errMsgs, fmt.Sprintf(
+					"[%s]: '%v' | Needs to implement '%s'",
+					err.FailedField,
+					err.Value,
+					err.Tag,
+				))
+			}
+			return &fiber.Error{
+				Code:    fiber.StatusBadRequest,
+				Message: strings.Join(errMsgs, ", "),
+			}
 		}
 		b := &data.Movie{
 			Title:   input.Title,

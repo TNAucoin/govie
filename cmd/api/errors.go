@@ -14,12 +14,6 @@ func errorResponse(status int, message string) error {
 	return fiber.NewError(status, message)
 }
 
-func errorMessage(message string) *fiber.Map {
-	return &fiber.Map{
-		"error": message,
-	}
-}
-
 func (api *APIApp) serverErrorResponse(c *fiber.Ctx, err error) error {
 	api.logError(c.Method(), c.Request().URI().String(), err)
 	return errorResponse(http.StatusInternalServerError,
@@ -33,6 +27,6 @@ func (api *APIApp) notFoundErrorResponse() error {
 	)
 }
 
-func (api *APIApp) badRequestErrorResponse(c *fiber.Ctx, err error) error {
+func (api *APIApp) badRequestErrorResponse(err error) error {
 	return errorResponse(http.StatusBadRequest, err.Error())
 }

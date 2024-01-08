@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnaucoin/govie/cmd/presenter"
 	"github.com/tnaucoin/govie/internal/data"
@@ -26,12 +25,7 @@ func CreateMovieHandler(api *APIApp) fiber.Handler {
 			errMsgs := make([]string, 0)
 
 			for _, err := range errs {
-				errMsgs = append(errMsgs, fmt.Sprintf(
-					"[%s]: '%v' | Needs to implement '%s'",
-					err.FailedField,
-					err.Value,
-					err.Tag,
-				))
+				errMsgs = append(errMsgs, err.Message)
 			}
 			return &fiber.Error{
 				Code:    fiber.StatusBadRequest,

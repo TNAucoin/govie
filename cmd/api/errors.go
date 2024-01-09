@@ -30,3 +30,8 @@ func (api *APIApp) notFoundErrorResponse() error {
 func (api *APIApp) badRequestErrorResponse(err error) error {
 	return errorResponse(http.StatusBadRequest, err.Error())
 }
+
+func (api *APIApp) failedValidationResponse(c *fiber.Ctx, errors map[string]string) error {
+	c.Status(http.StatusUnprocessableEntity)
+	return c.JSON(errors)
+}

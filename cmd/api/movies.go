@@ -5,7 +5,6 @@ import (
 	"github.com/tnaucoin/govie/cmd/presenter"
 	"github.com/tnaucoin/govie/internal/data"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -21,16 +20,8 @@ func CreateMovieHandler(api *APIApp) fiber.Handler {
 		if err != nil {
 			return api.badRequestErrorResponse(err)
 		}
-		if errs := api.validator.Validate(input); len(errs) > 0 && errs[0].Error {
-			errMsgs := make([]string, 0)
-
-			for _, err := range errs {
-				errMsgs = append(errMsgs, err.Message)
-			}
-			return &fiber.Error{
-				Code:    fiber.StatusBadRequest,
-				Message: strings.Join(errMsgs, ", "),
-			}
+		if errs := api.validator.Validate(input); len(errs) > 0 {
+			return api.failedValidationResponse(c, errs)
 		}
 		b := &data.Movie{
 			Title:   input.Title,

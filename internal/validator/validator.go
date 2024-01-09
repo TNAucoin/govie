@@ -5,57 +5,55 @@ import (
 	"github.com/go-playground/validator"
 )
 
-type ValidationErrorResponse struct {
-	Error       bool
-	FailedField string
-	Tag         string
-	Value       any
-	Message     string
+type ValidationError map[string]string
+
+func (v ValidationError) Error() string {
+	var errStr string
+	for key, val := range v {
+		errStr += fmt.Sprintf("%s:%s", key, val)
+	}
+	return errStr
+}
+
+func (v ValidationError) AddError(key, message string) {
+	if _, exists := v[key]; !exists {
+		v[key] = message
+	}
+}
+
+func (v ValidationError) CheckErrors(err validator.FieldError) {
+	switch err.ActualTag() {
+	case "required":
+		v.AddError("required", fmt.Sprintf("field: %s is %s, and must not be blank", err.Field(), err.Tag()))
+		break
+	case "gte", "lte":
+		v.AddError("invalid-value", fmt.Sprintf("field: %s must be %s than %d", err.Field(), err.Tag(), err.Value()))
+		break
+	case "min":
+		v.AddError("invalid-collection", fmt.Sprintf("field: %s must contain at least %s elements", err.Field(), err.Param()))
+		break
+	}
 }
 
 type Validator struct {
 	valdtr *validator.Validate
+	Errors ValidationError
 }
 
 func New() *Validator {
 	v := validator.New()
 	return &Validator{
 		valdtr: v,
+		Errors: make(ValidationError),
 	}
 }
 
-func fmtMessage(field, actualTag string, param, value any) string {
-	switch actualTag {
-	case "required":
-		return fmt.Sprintf("field: %s is %s, and must not be %d", field, actualTag, value)
-	case "gte", "lte":
-		return fmt.Sprintf("field: %s must be %s than %d", field, actualTag, value)
-	default:
-		return fmt.Sprint("Error...")
-	}
-
-}
-
-func (v *Validator) Validate(data any) []ValidationErrorResponse {
-	validationErrors := []ValidationErrorResponse{}
+func (v *Validator) Validate(data any) ValidationError {
 	errs := v.valdtr.Struct(data)
 	if errs != nil {
 		for _, err := range errs.(validator.ValidationErrors) {
-
-			fmt.Println(err.Field())
-			fmt.Println(err.Tag())
-			fmt.Println(err.ActualTag())
-			fmt.Println(err.Type())
-			fmt.Println(err.Value())
-			fmt.Println(err.Param())
-			var elem ValidationErrorResponse
-			elem.FailedField = err.Field()
-			elem.Tag = err.Tag()
-			elem.Value = err.Value()
-			elem.Error = true
-			elem.Message = fmtMessage(err.Field(), err.Tag(), err.Param(), err.Value())
-			validationErrors = append(validationErrors, elem)
+			v.Errors.CheckErrors(err)
 		}
 	}
-	return validationErrors
+	return v.Errors
 }

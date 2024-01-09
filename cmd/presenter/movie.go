@@ -22,9 +22,7 @@ func MovieSuccessResponse(data *data.Movie) *fiber.Map {
 		Genres:  data.Genres,
 	}
 	return &fiber.Map{
-		"status": true,
-		"movie":  movie,
-		"error":  nil,
+		"movie": movie,
 	}
 }
 

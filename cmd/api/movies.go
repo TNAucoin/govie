@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnaucoin/govie/cmd/presenter"
 	"github.com/tnaucoin/govie/internal/data"
+	"net/http"
 	"strconv"
 	"time"
 )
@@ -21,7 +22,7 @@ func CreateMovieHandler(api *APIApp) fiber.Handler {
 			return api.badRequestErrorResponse(err)
 		}
 		if errs := api.validator.Validate(input); len(errs) > 0 {
-			return api.failedValidationResponse(c, errs)
+			return c.Status(http.StatusUnprocessableEntity).JSON(presenter.MovieValidationErrorResponse(errs))
 		}
 		b := &data.Movie{
 			Title:   input.Title,

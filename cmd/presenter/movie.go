@@ -3,6 +3,7 @@ package presenter
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/tnaucoin/govie/internal/data"
+	"github.com/tnaucoin/govie/internal/validator"
 )
 
 type Movie struct {
@@ -26,10 +27,10 @@ func MovieSuccessResponse(data *data.Movie) *fiber.Map {
 	}
 }
 
-func MovieErrorResponse(err error) *fiber.Map {
+func MovieValidationErrorResponse(err validator.ValidationError) *fiber.Map {
 	return &fiber.Map{
 		"status": false,
 		"movie":  "",
-		"error":  err.Error(),
+		"error":  err,
 	}
 }

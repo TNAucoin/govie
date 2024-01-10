@@ -1,0 +1,29 @@
+version: '3'
+services:
+  app:
+    build: .
+    ports:
+      - "4000:4000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=govie
+      - POSTGRES_USER=govie
+      - POSTGRES_PASSWORD=pa55word
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL","pg_isready -U govie -d govie"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  db_data:
